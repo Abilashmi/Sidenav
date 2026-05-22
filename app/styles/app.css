@@ -1,0 +1,92 @@
+/* =============================================
+   Floating Side Navigation — Admin Global CSS
+   ============================================= */
+
+:root {
+  --fsn-admin-primary: #008060;
+  --fsn-admin-primary-hover: #006e52;
+  --fsn-admin-border: #e1e3e5;
+  --fsn-admin-text: #202223;
+  --fsn-admin-text-subdued: #6d7175;
+  --fsn-admin-bg: #f6f6f7;
+  --fsn-admin-radius: 8px;
+  --fsn-admin-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "San Francisco", "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--fsn-admin-bg);
+  color: var(--fsn-admin-text);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Color picker preview swatch */
+.fsn-color-swatch {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  border: 1px solid var(--fsn-admin-border);
+  vertical-align: middle;
+}
+
+/* Sidebar preview container */
+.fsn-preview-wrapper {
+  background: #f0f0f0;
+  border-radius: var(--fsn-admin-radius);
+  padding: 16px;
+  min-height: 280px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Drag handle for reordering */
+.fsn-drag-handle {
+  cursor: grab;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.fsn-drag-handle:hover {
+  opacity: 1;
+}
+
+/* Badge overrides */
+.fsn-badge--active {
+  background: #d3f0e2;
+  color: #008060;
+}
+
+.fsn-badge--inactive {
+  background: #fff4e4;
+  color: #c05717;
+}
+
+/* Smooth card transitions */
+.Polaris-Card {
+  transition: box-shadow 0.2s ease;
+}
+
+/* Collection list item hover */
+.fsn-collection-item:hover {
+  background: #f9fafb;
+}
+
+/* Responsive admin tweaks */
+@media (max-width: 640px) {
+  .Polaris-Page {
+    padding: 0 8px;
+  }
+}

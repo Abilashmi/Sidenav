@@ -1,0 +1,314 @@
+/* =============================================
+   Floating Side Navigation — Storefront CSS
+   ============================================= */
+
+:root {
+  --fsn-bg: #ffffff;
+  --fsn-text: #1a1a1a;
+  --fsn-radius: 12px;
+  --fsn-icon-size: 56px;
+  --fsn-z: 9999;
+  --fsn-opacity: 1;
+  --fsn-gap: 8px;
+}
+
+#fsn-root { display: contents; }
+
+/* =============================================
+   Toggle Button
+   ============================================= */
+
+#fsn-toggle {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: calc(var(--fsn-z) + 1);
+  background: var(--fsn-bg);
+  color: var(--fsn-text);
+  border: none;
+  cursor: pointer;
+  width: 36px;
+  height: 52px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s ease;
+}
+
+#fsn-toggle:hover { opacity: 0.8; }
+
+#fsn-toggle:focus-visible {
+  outline: 2px solid var(--fsn-text);
+  outline-offset: 2px;
+}
+
+#fsn-toggle.fsn-left {
+  left: 0;
+  border-radius: 0 var(--fsn-radius) var(--fsn-radius) 0;
+}
+
+#fsn-toggle.fsn-right {
+  right: 0;
+  border-radius: var(--fsn-radius) 0 0 var(--fsn-radius);
+}
+
+#fsn-toggle.fsn-shadow {
+  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+#fsn-toggle.fsn-right.fsn-shadow {
+  box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+/* Icon swap inside toggle */
+#fsn-toggle svg {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#fsn-toggle .fsn-icon-bars { opacity: 1; transform: scale(1) rotate(0deg); }
+#fsn-toggle .fsn-icon-x    { opacity: 0; transform: scale(0.4) rotate(45deg); }
+
+#fsn-toggle.fsn-open .fsn-icon-bars { opacity: 0; transform: scale(0.4) rotate(-45deg); }
+#fsn-toggle.fsn-open .fsn-icon-x    { opacity: 1; transform: scale(1) rotate(0deg); }
+
+/* =============================================
+   Sidebar Container
+   ============================================= */
+
+#fsn-sidebar {
+  position: fixed;
+  top: 50%;
+  z-index: var(--fsn-z);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--fsn-gap);
+  padding: 12px 8px;
+  background: var(--fsn-bg);
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  opacity: var(--fsn-opacity);
+  /* Start hidden */
+  visibility: hidden;
+  pointer-events: none;
+}
+
+#fsn-sidebar::-webkit-scrollbar { display: none; }
+
+/* ---- Left sidebar: slides in from the left ---- */
+#fsn-sidebar.fsn-left {
+  left: 0;
+  border-radius: 0 var(--fsn-radius) var(--fsn-radius) 0;
+  transform: translateY(-50%) translateX(-110%);
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s linear 0.35s,
+    opacity 0.35s ease;
+}
+
+#fsn-sidebar.fsn-left.fsn-open {
+  transform: translateY(-50%) translateX(36px);
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s linear 0s,
+    opacity 0.35s ease;
+}
+
+/* ---- Right sidebar: slides in from the right ---- */
+#fsn-sidebar.fsn-right {
+  right: 0;
+  border-radius: var(--fsn-radius) 0 0 var(--fsn-radius);
+  transform: translateY(-50%) translateX(110%);
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s linear 0.35s,
+    opacity 0.35s ease;
+}
+
+#fsn-sidebar.fsn-right.fsn-open {
+  transform: translateY(-50%) translateX(-36px);
+  visibility: visible;
+  pointer-events: auto;
+  transition:
+    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+    visibility 0s linear 0s,
+    opacity 0.35s ease;
+}
+
+/* =============================================
+   Shadow
+   ============================================= */
+
+#fsn-sidebar.fsn-shadow {
+  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+#fsn-sidebar.fsn-right.fsn-shadow {
+  box-shadow: -2px 0 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* =============================================
+   Items
+   ============================================= */
+
+.fsn-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  color: var(--fsn-text);
+  width: 100%;
+  cursor: pointer;
+}
+
+.fsn-item:hover .fsn-icon,
+.fsn-item:focus-visible .fsn-icon {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* =============================================
+   Icon
+   ============================================= */
+
+.fsn-icon {
+  width: var(--fsn-icon-size);
+  height: var(--fsn-icon-size);
+  border-radius: calc(var(--fsn-radius) - 4px);
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: #f0f0f0;
+}
+
+.fsn-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border: none;
+}
+
+/* =============================================
+   Label
+   ============================================= */
+
+.fsn-label {
+  font-size: 10px;
+  line-height: 1.2;
+  text-align: center;
+  max-width: var(--fsn-icon-size);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fsn-text);
+  font-family: inherit;
+}
+
+/* =============================================
+   Animation style overrides
+   ============================================= */
+
+/* --- fade --- */
+#fsn-sidebar.fsn-left.fsn-anim-fade {
+  transform: translateY(-50%) translateX(36px);
+  opacity: 0;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+#fsn-sidebar.fsn-left.fsn-anim-fade.fsn-open {
+  transform: translateY(-50%) translateX(36px);
+  opacity: var(--fsn-opacity);
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
+#fsn-sidebar.fsn-right.fsn-anim-fade {
+  transform: translateY(-50%) translateX(-36px);
+  opacity: 0;
+  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
+}
+#fsn-sidebar.fsn-right.fsn-anim-fade.fsn-open {
+  transform: translateY(-50%) translateX(-36px);
+  opacity: var(--fsn-opacity);
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
+}
+
+/* --- scale --- */
+#fsn-sidebar.fsn-left.fsn-anim-scale {
+  transform: translateY(-50%) translateX(36px) scaleX(0);
+  transform-origin: left center;
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease,
+              visibility 0s linear 0.3s;
+}
+#fsn-sidebar.fsn-left.fsn-anim-scale.fsn-open {
+  transform: translateY(-50%) translateX(36px) scaleX(1);
+  opacity: var(--fsn-opacity);
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease,
+              visibility 0s linear 0s;
+}
+#fsn-sidebar.fsn-right.fsn-anim-scale {
+  transform: translateY(-50%) translateX(-36px) scaleX(0);
+  transform-origin: right center;
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease,
+              visibility 0s linear 0.3s;
+}
+#fsn-sidebar.fsn-right.fsn-anim-scale.fsn-open {
+  transform: translateY(-50%) translateX(-36px) scaleX(1);
+  opacity: var(--fsn-opacity);
+  visibility: visible;
+  pointer-events: auto;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              opacity 0.3s ease,
+              visibility 0s linear 0s;
+}
+
+/* --- none --- */
+#fsn-sidebar.fsn-anim-none {
+  transition: none !important;
+}
+#fsn-sidebar.fsn-left.fsn-anim-none       { transform: translateY(-50%) translateX(-110%); }
+#fsn-sidebar.fsn-left.fsn-anim-none.fsn-open  { transform: translateY(-50%) translateX(36px); visibility: visible; pointer-events: auto; }
+#fsn-sidebar.fsn-right.fsn-anim-none      { transform: translateY(-50%) translateX(110%); }
+#fsn-sidebar.fsn-right.fsn-anim-none.fsn-open { transform: translateY(-50%) translateX(-36px); visibility: visible; pointer-events: auto; }
+
+/* =============================================
+   Mobile
+   ============================================= */
+
+@media (max-width: 768px) {
+  #fsn-sidebar { max-height: 70vh; }
+}
+
+/* =============================================
+   Mobile-only mode
+   ============================================= */
+
+#fsn-sidebar.fsn-mobile-only,
+#fsn-toggle.fsn-mobile-only {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  #fsn-sidebar.fsn-mobile-only { display: flex; }
+  #fsn-toggle.fsn-mobile-only  { display: flex; }
+}

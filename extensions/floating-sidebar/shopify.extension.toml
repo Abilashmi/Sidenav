@@ -1,0 +1,13 @@
+api_version = "2024-10"
+uid = "b2d485f7-6f58-d667-210b-cc98c03ff77d5cff029a"
+
+[[extensions]]
+type = "theme"
+name = "Floating Side Navigation"
+handle = "floating-side-navigation"
+
+  [extensions.development]
+    root_dir = "."
+
+  [[extensions.targeting]]
+    target = "body"

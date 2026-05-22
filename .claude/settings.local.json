@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm --version)",
+      "Bash(npx --version)",
+      "Bash(npm install *)",
+      "Bash(grep -r \"Invalid path\" \"C:/Users/HP/AppData/Local/nvm/v20.19.4/node_modules/@shopify/cli/dist/\" 2>/dev/null | grep -v \".map\" | head -10)",
+      "Read(//c/Users/HP/AppData/Local/nvm/v20.19.4/node_modules/@shopify/cli/dist/**)",
+      "Bash(npx prisma *)",
+      "Bash(tasklist)",
+      "Bash(tasklist /FI \"PID eq 1608\" /FO LIST)",
+      "PowerShell(Get-Process -Id 1608)",
+      "Bash(grep -rn \"webs\\\\|web\\\\.toml\\\\|shopify\\\\.web\" \"C:/nvm4w/nodejs/node_modules/@shopify/app/dist/cli/models/app/loader.js\" 2>/dev/null | head -30)",
+      "Read(//c/Users/HP/AppData/Local/nvm/v20.19.4/node_modules/@shopify/app/dist/cli/models/app/**)",
+      "Bash(grep -rn \"configurationFileNames\" \"C:/nvm4w/nodejs/node_modules/@shopify/app/dist/cli/models/app/loader.js\" 2>/dev/null | head -10; grep -rn \"configurationFileNames\" \"C:/nvm4w/nodejs/node_modules/@shopify/app/dist/cli/constants.js\" 2>/dev/null | head -10)",
+      "Read(//c/Users/HP/AppData/Local/nvm/v20.19.4/node_modules/@shopify/app/dist/cli/**)",
+      "Bash(find \"C:/nvm4w/nodejs/node_modules/@shopify\" -name \"shopify.web.toml\" 2>/dev/null | head -10)",
+      "Read(//c/Users/HP/AppData/Local/nvm/v20.19.4/node_modules/@shopify/**)",
+      "Bash(\"c:/xampp/htdocs/Sidenav/node_modules/.bin/remix\" --help)",
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root -e \"USE floating_sidenav; SELECT id, shop, scope, isOnline FROM Session LIMIT 5;\")"
+    ]
+  }
+}

@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Session {
+  id          String    @id
+  shop        String    @db.VarChar(255)
+  state       String    @db.VarChar(255)
+  isOnline    Boolean   @default(false)
+  scope       String?   @db.Text
+  expires     DateTime?
+  accessToken String    @db.Text
+  userId      BigInt?
+  firstName   String?   @db.VarChar(255)
+  lastName    String?   @db.VarChar(255)
+  email       String?   @db.VarChar(255)
+  accountOwner Boolean  @default(false)
+  locale      String?   @db.VarChar(50)
+  collaborator Boolean? @default(false)
+  emailVerified Boolean? @default(false)
+}
+
+model Shop {
+  id          String            @id @default(cuid())
+  shop        String            @unique
+  accessToken String
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  settings    SidebarSettings?
+  collections SelectedCollection[]
+}
+
+model SidebarSettings {
+  id              String   @id @default(cuid())
+  shopId          String   @unique
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  enabled         Boolean  @default(true)
+  position        String   @default("left")
+  mobileOnly      Boolean  @default(false)
+  backgroundColor String   @default("#ffffff")
+  textColor       String   @default("#1a1a1a")
+  borderRadius    Int      @default(12)
+  shadow          Boolean  @default(true)
+  iconSize        Int      @default(56)
+  animationStyle  String   @default("slide")
+  opacity         Float    @default(1.0)
+  zIndex          Int      @default(9999)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SelectedCollection {
+  id           String   @id @default(cuid())
+  shopId       String
+  shop         Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  collectionId String
+  title        String
+  image        String?
+  handle       String
+  sortOrder    Int      @default(0)
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([shopId, collectionId])
+  @@index([shopId, sortOrder])
+}
