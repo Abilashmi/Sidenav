@@ -17,7 +17,8 @@
       "Bash(find \"C:/nvm4w/nodejs/node_modules/@shopify\" -name \"shopify.web.toml\" 2>/dev/null | head -10)",
       "Read(//c/Users/HP/AppData/Local/nvm/v20.19.4/node_modules/@shopify/**)",
       "Bash(\"c:/xampp/htdocs/Sidenav/node_modules/.bin/remix\" --help)",
-      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root -e \"USE floating_sidenav; SELECT id, shop, scope, isOnline FROM Session LIMIT 5;\")"
+      "Bash(\"c:/xampp/mysql/bin/mysql.exe\" -u root -e \"USE floating_sidenav; SELECT id, shop, scope, isOnline FROM Session LIMIT 5;\")",
+      "Bash(npx shopify *)"
     ]
   }
 }

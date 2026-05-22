@@ -26,23 +26,31 @@
     return window.FSN_APP_URL || (root && root.dataset.appUrl) || "";
   }
 
-  async function fetchSidebarData(shop) {
-    const appUrl = getAppUrl();
-    if (!appUrl) {
-      console.warn("[FSN] No app URL configured. Cannot load sidebar.");
-      return null;
-    }
-    try {
-      const res = await fetch(
-        `${appUrl}/api/sidebar-data?shop=${encodeURIComponent(shop)}`,
-        { headers: { Accept: "application/json" } }
-      );
-      if (!res.ok) return null;
-      return await res.json();
-    } catch (e) {
-      console.warn("[FSN] Failed to fetch sidebar data:", e);
-      return null;
-    }
+  function fetchSidebarData(shop) {
+    return new Promise(function (resolve) {
+      var appUrl = window.FSN_APP_URL;
+      if (!appUrl) {
+        console.warn("[FSN] No app URL — set it in Theme Editor → App Embeds → Floating Side Navigation → App Server URL.");
+        resolve(null);
+        return;
+      }
+      if (appUrl.indexOf("://") === -1) appUrl = "https://" + appUrl;
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", appUrl + "/api/sidebar-data?shop=" + encodeURIComponent(shop));
+      xhr.setRequestHeader("Accept", "application/json");
+      xhr.timeout = 8000;
+      xhr.onload = function () {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try { resolve(JSON.parse(xhr.responseText)); }
+          catch (e) { resolve(null); }
+        } else {
+          resolve(null);
+        }
+      };
+      xhr.onerror   = function () { console.warn("[FSN] Network error — is shopify app dev running?"); resolve(null); };
+      xhr.ontimeout = function () { console.warn("[FSN] Request timed out."); resolve(null); };
+      xhr.send();
+    });
   }
 
   function buildToggle(isRight, bg, text, zIndex, shadow) {
@@ -191,22 +199,59 @@
     setOpen(isOpen);
   }
 
-  async function init() {
-    /* Guard: don't run twice */
-    if (document.getElementById(SIDEBAR_ID)) return;
+  var _cachedData = null;
 
+  async function init() {
     var shop = getShop();
     if (!shop) return;
+
+    /* Re-use cached data if sidebar is just missing from DOM (SPA navigation) */
+    if (_cachedData) {
+      if (!document.getElementById(SIDEBAR_ID)) {
+        renderSidebar(_cachedData);
+      }
+      return;
+    }
+
+    /* Guard: don't fetch twice if already rendered */
+    if (document.getElementById(SIDEBAR_ID)) return;
 
     var data = await fetchSidebarData(shop);
     if (!data || data.error) return;
 
+    _cachedData = data;
     renderSidebar(data);
+  }
+
+  function reinit() {
+    /* If sidebar elements are gone (SPA nav removed them), re-render */
+    if (!document.getElementById(SIDEBAR_ID)) {
+      init();
+    }
   }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
+  }
+
+  /* Handle SPA-style navigation used by many Shopify themes (Dawn, etc.) */
+  document.addEventListener("page:load",    reinit); /* Turbolinks */
+  document.addEventListener("turbo:load",   reinit); /* Turbo */
+  document.addEventListener("shopify:section:load", reinit);
+  window.addEventListener("popstate",       reinit); /* history.pushState navigation */
+
+  /* Observe body for sidebar removal caused by theme content swapping */
+  if (window.MutationObserver) {
+    var _observer = new MutationObserver(function (mutations) {
+      var removed = mutations.some(function (m) {
+        return Array.from(m.removedNodes).some(function (n) {
+          return n.id === SIDEBAR_ID || n.id === TOGGLE_ID;
+        });
+      });
+      if (removed) reinit();
+    });
+    _observer.observe(document.body, { childList: true });
   }
 })();

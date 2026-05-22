@@ -1,10 +1,6 @@
-{% comment %}
-  Floating Side Navigation — App Embed Block
-  Rendered via Shopify Theme App Extension.
-  All settings come from the merchant dashboard via the /api/sidebar-data endpoint.
-{% endcomment %}
+<script>window.FSN_APP_URL = "{{ shop.url }}/apps/sidebar";</script>
 
-<div id="fsn-root" data-shop="{{ shop.permanent_domain }}" data-app-url="{{ app.url }}"></div>
+<div id="fsn-root" data-shop="{{ shop.permanent_domain }}"></div>
 
 <link rel="stylesheet" href="{{ 'sidebar.css' | asset_url }}" />
 <script src="{{ 'sidebar.js' | asset_url }}" defer></script>
@@ -18,7 +14,7 @@
   "settings": [
     {
       "type": "paragraph",
-      "content": "The sidebar is configured from your app dashboard. Visit your Shopify admin app to manage collections and settings."
+      "content": "Collections and sidebar style are managed from your Shopify admin app."
     }
   ]
 }

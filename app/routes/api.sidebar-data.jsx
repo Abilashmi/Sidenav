@@ -5,16 +5,16 @@ export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const shop = url.searchParams.get("shop");
 
-  if (!shop) {
-    return json({ error: "Missing shop parameter" }, { status: 400 });
-  }
-
   const headers = {
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type",
     "Cache-Control": "public, max-age=60",
   };
+
+  if (!shop) {
+    return json({ error: "Missing shop parameter" }, { status: 400, headers });
+  }
 
   if (request.method === "OPTIONS") {
     return new Response(null, { status: 200, headers });
