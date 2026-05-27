@@ -11,11 +11,21 @@ import { AppProvider } from "@shopify/shopify-app-remix/react";
 import { NavMenu } from "@shopify/app-bridge-react";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { authenticate } from "../shopify.server";
+import { writeSidebarMetafield } from "../metafields.server";
 
 export const links = () => [{ rel: "stylesheet", href: polarisStyles }];
 
+// Write metafield once per server lifetime per shop (non-blocking)
+const _synced = new Set();
+
 export const loader = async ({ request }) => {
-  await authenticate.admin(request);
+  const { admin, session } = await authenticate.admin(request);
+  if (!_synced.has(session.shop)) {
+    _synced.add(session.shop);
+    writeSidebarMetafield(admin, session.shop).catch((e) =>
+      console.error("[FSN] Boot sync failed:", e)
+    );
+  }
   return json({ apiKey: process.env.SHOPIFY_API_KEY || "" });
 };
 
@@ -31,6 +41,8 @@ export default function App() {
       <NavMenu>
         <Link to="/app" rel="home">Dashboard</Link>
         <Link to="/app/collections">Collections</Link>
+        <Link to="/app/products">Products</Link>
+        <Link to="/app/mappings">Category Nav</Link>
         <Link to="/app/settings">Settings</Link>
       </NavMenu>
       <Outlet />

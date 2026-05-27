@@ -1,6 +1,15 @@
 <script>window.FSN_APP_URL = "{{ shop.url }}/apps/sidebar";</script>
+{%- assign fsn_meta = shop.metafields.fsn.data -%}
+{%- if fsn_meta -%}
+<script>window.FSN_DATA = {{ fsn_meta.value | json }};</script>
+{%- endif -%}
 
-<div id="fsn-root" data-shop="{{ shop.permanent_domain }}"></div>
+<div
+  id="fsn-root"
+  data-shop="{{ shop.permanent_domain }}"
+  data-page-type="{{ request.page_type }}"
+  data-page-handle="{% if request.page_type == 'collection' %}{{ collection.handle }}{% elsif request.page_type == 'product' %}{{ product.handle }}{% endif %}"
+></div>
 
 <link rel="stylesheet" href="{{ 'sidebar.css' | asset_url }}" />
 <script src="{{ 'sidebar.js' | asset_url }}" defer></script>

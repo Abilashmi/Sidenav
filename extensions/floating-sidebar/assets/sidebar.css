@@ -1,21 +1,25 @@
 /* =============================================
    Floating Side Navigation — Storefront CSS
+   Phase 2 Enhanced
    ============================================= */
 
 :root {
-  --fsn-bg: #ffffff;
-  --fsn-text: #1a1a1a;
-  --fsn-radius: 12px;
-  --fsn-icon-size: 56px;
-  --fsn-z: 9999;
-  --fsn-opacity: 1;
-  --fsn-gap: 8px;
+  --fsn-bg:           #ffffff;
+  --fsn-text:         #1a1a1a;
+  --fsn-radius:       12px;
+  --fsn-icon-size:    56px;
+  --fsn-z:            9999;
+  --fsn-opacity:      1;
+  --fsn-gap:          8px;
+  --fsn-width:        280px;
+  --fsn-top-margin:   20px;
+  --fsn-bottom-margin: 20px;
 }
 
 #fsn-root { display: contents; }
 
 /* =============================================
-   Toggle Button
+   Toggle Button (hamburger mode only)
    ============================================= */
 
 #fsn-toggle {
@@ -37,46 +41,30 @@
 }
 
 #fsn-toggle:hover { opacity: 0.8; }
-
 #fsn-toggle:focus-visible {
   outline: 2px solid var(--fsn-text);
   outline-offset: 2px;
 }
 
-#fsn-toggle.fsn-left {
-  left: 0;
-  border-radius: 0 var(--fsn-radius) var(--fsn-radius) 0;
-}
+#fsn-toggle.fsn-left  { left: 0;  border-radius: 0 var(--fsn-radius) var(--fsn-radius) 0; }
+#fsn-toggle.fsn-right { right: 0; border-radius: var(--fsn-radius) 0 0 var(--fsn-radius); }
 
-#fsn-toggle.fsn-right {
-  right: 0;
-  border-radius: var(--fsn-radius) 0 0 var(--fsn-radius);
-}
+#fsn-toggle.fsn-shadow       { box-shadow:  2px 2px 10px rgba(0,0,0,0.18); }
+#fsn-toggle.fsn-right.fsn-shadow { box-shadow: -2px 2px 10px rgba(0,0,0,0.18); }
 
-#fsn-toggle.fsn-shadow {
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.18);
-}
-
-#fsn-toggle.fsn-right.fsn-shadow {
-  box-shadow: -2px 2px 10px rgba(0, 0, 0, 0.18);
-}
-
-/* Icon swap inside toggle */
 #fsn-toggle svg {
   position: absolute;
   width: 18px;
   height: 18px;
   transition: opacity 0.2s ease, transform 0.2s ease;
 }
-
 #fsn-toggle .fsn-icon-bars { opacity: 1; transform: scale(1) rotate(0deg); }
 #fsn-toggle .fsn-icon-x    { opacity: 0; transform: scale(0.4) rotate(45deg); }
-
 #fsn-toggle.fsn-open .fsn-icon-bars { opacity: 0; transform: scale(0.4) rotate(-45deg); }
 #fsn-toggle.fsn-open .fsn-icon-x    { opacity: 1; transform: scale(1) rotate(0deg); }
 
 /* =============================================
-   Sidebar Container
+   Sidebar Container — Hamburger Mode
    ============================================= */
 
 #fsn-sidebar {
@@ -96,72 +84,129 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
   opacity: var(--fsn-opacity);
-  /* Start hidden */
   visibility: hidden;
   pointer-events: none;
 }
-
 #fsn-sidebar::-webkit-scrollbar { display: none; }
 
-/* ---- Left sidebar: slides in from the left ---- */
+/* Left slide-in */
 #fsn-sidebar.fsn-left {
   left: 0;
   border-radius: 0 var(--fsn-radius) var(--fsn-radius) 0;
   transform: translateY(-50%) translateX(-110%);
   transition:
-    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-    visibility 0s linear 0.35s,
-    opacity 0.35s ease;
+    transform    0.35s cubic-bezier(0.34,1.56,0.64,1),
+    visibility   0s   linear 0.35s,
+    opacity      0.35s ease;
 }
-
 #fsn-sidebar.fsn-left.fsn-open {
   transform: translateY(-50%) translateX(36px);
   visibility: visible;
   pointer-events: auto;
   transition:
-    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-    visibility 0s linear 0s,
-    opacity 0.35s ease;
+    transform    0.35s cubic-bezier(0.34,1.56,0.64,1),
+    visibility   0s   linear 0s,
+    opacity      0.35s ease;
 }
 
-/* ---- Right sidebar: slides in from the right ---- */
+/* Right slide-in */
 #fsn-sidebar.fsn-right {
   right: 0;
   border-radius: var(--fsn-radius) 0 0 var(--fsn-radius);
   transform: translateY(-50%) translateX(110%);
   transition:
-    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-    visibility 0s linear 0.35s,
-    opacity 0.35s ease;
+    transform    0.35s cubic-bezier(0.34,1.56,0.64,1),
+    visibility   0s   linear 0.35s,
+    opacity      0.35s ease;
 }
-
 #fsn-sidebar.fsn-right.fsn-open {
   transform: translateY(-50%) translateX(-36px);
   visibility: visible;
   pointer-events: auto;
   transition:
-    transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
-    visibility 0s linear 0s,
-    opacity 0.35s ease;
+    transform    0.35s cubic-bezier(0.34,1.56,0.64,1),
+    visibility   0s   linear 0s,
+    opacity      0.35s ease;
 }
+
+/* =============================================
+   Static Mode
+   ============================================= */
+
+#fsn-sidebar.fsn-static {
+  top:        var(--fsn-top-margin);
+  bottom:     var(--fsn-bottom-margin);
+  width:      calc(var(--fsn-icon-size) + 20px);
+  height:     auto;
+  max-height: none;
+  align-items: center;
+  padding:    6px 4px;
+  visibility: visible;
+  pointer-events: auto;
+  transform:  none !important;
+  transition: none !important;
+  overflow-y: auto;
+  gap:        6px;
+}
+#fsn-sidebar.fsn-static.fsn-left  { left: 0;  border-radius: 0 var(--fsn-radius) var(--fsn-radius) 0; }
+#fsn-sidebar.fsn-static.fsn-right { right: 0; border-radius: var(--fsn-radius) 0 0 var(--fsn-radius); }
+
+/* Static items — compact column layout (image on top, name below) */
+#fsn-sidebar.fsn-static .fsn-item,
+#fsn-sidebar.fsn-static .fsn-item-product {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 4px;
+  border-radius: 8px;
+  width: 100%;
+  transition: background 0.15s ease;
+}
+#fsn-sidebar.fsn-static .fsn-item:hover,
+#fsn-sidebar.fsn-static .fsn-item-product:hover {
+  background: rgba(0,0,0,0.06);
+}
+#fsn-sidebar.fsn-static .fsn-icon {
+  width:  var(--fsn-icon-size);
+  height: var(--fsn-icon-size);
+  flex-shrink: 0;
+}
+#fsn-sidebar.fsn-static .fsn-label {
+  font-size:     10px;
+  white-space:   nowrap;
+  overflow:      hidden;
+  text-overflow: ellipsis;
+  max-width:     var(--fsn-icon-size);
+  font-weight:   400;
+  text-align:    center;
+  flex:          unset;
+}
+/* Product meta — centred column in compact mode */
+#fsn-sidebar.fsn-static .fsn-product-meta {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            2px;
+  width:          100%;
+}
+
+/* Body pushed by static sidebar — width matches compact icon dock */
+body.fsn-static-left  { padding-left:  calc(var(--fsn-icon-size) + 20px) !important; transition: padding-left  0.3s ease; }
+body.fsn-static-right { padding-right: calc(var(--fsn-icon-size) + 20px) !important; transition: padding-right 0.3s ease; }
 
 /* =============================================
    Shadow
    ============================================= */
 
-#fsn-sidebar.fsn-shadow {
-  box-shadow: 2px 0 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-#fsn-sidebar.fsn-right.fsn-shadow {
-  box-shadow: -2px 0 20px rgba(0, 0, 0, 0.15), 0 2px 8px rgba(0, 0, 0, 0.08);
-}
+#fsn-sidebar.fsn-shadow       { box-shadow:  2px 0 20px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08); }
+#fsn-sidebar.fsn-right.fsn-shadow { box-shadow: -2px 0 20px rgba(0,0,0,0.15), 0 2px 8px rgba(0,0,0,0.08); }
 
 /* =============================================
-   Items
+   Items — shared
    ============================================= */
 
-.fsn-item {
+.fsn-item,
+.fsn-item-product {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -171,11 +216,12 @@
   width: 100%;
   cursor: pointer;
 }
-
 .fsn-item:hover .fsn-icon,
-.fsn-item:focus-visible .fsn-icon {
+.fsn-item:focus-visible .fsn-icon,
+.fsn-item-product:hover .fsn-icon,
+.fsn-item-product:focus-visible .fsn-icon {
   transform: scale(1.08);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
 }
 
 /* =============================================
@@ -191,7 +237,6 @@
   transition: transform 0.2s ease, box-shadow 0.2s ease;
   background: #f0f0f0;
 }
-
 .fsn-icon img {
   width: 100%;
   height: 100%;
@@ -217,78 +262,82 @@
 }
 
 /* =============================================
-   Animation style overrides
+   Product-specific elements
    ============================================= */
 
-/* --- fade --- */
-#fsn-sidebar.fsn-left.fsn-anim-fade {
-  transform: translateY(-50%) translateX(36px);
-  opacity: 0;
-  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-}
-#fsn-sidebar.fsn-left.fsn-anim-fade.fsn-open {
-  transform: translateY(-50%) translateX(36px);
-  opacity: var(--fsn-opacity);
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity 0.3s ease, visibility 0s linear 0s;
-}
-#fsn-sidebar.fsn-right.fsn-anim-fade {
-  transform: translateY(-50%) translateX(-36px);
-  opacity: 0;
-  transition: opacity 0.3s ease, visibility 0s linear 0.3s;
-}
-#fsn-sidebar.fsn-right.fsn-anim-fade.fsn-open {
-  transform: translateY(-50%) translateX(-36px);
-  opacity: var(--fsn-opacity);
-  visibility: visible;
-  pointer-events: auto;
-  transition: opacity 0.3s ease, visibility 0s linear 0s;
+.fsn-product-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
 }
 
-/* --- scale --- */
-#fsn-sidebar.fsn-left.fsn-anim-scale {
-  transform: translateY(-50%) translateX(36px) scaleX(0);
-  transform-origin: left center;
-  opacity: 0;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 0.3s ease,
-              visibility 0s linear 0.3s;
-}
-#fsn-sidebar.fsn-left.fsn-anim-scale.fsn-open {
-  transform: translateY(-50%) translateX(36px) scaleX(1);
-  opacity: var(--fsn-opacity);
-  visibility: visible;
-  pointer-events: auto;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 0.3s ease,
-              visibility 0s linear 0s;
-}
-#fsn-sidebar.fsn-right.fsn-anim-scale {
-  transform: translateY(-50%) translateX(-36px) scaleX(0);
-  transform-origin: right center;
-  opacity: 0;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 0.3s ease,
-              visibility 0s linear 0.3s;
-}
-#fsn-sidebar.fsn-right.fsn-anim-scale.fsn-open {
-  transform: translateY(-50%) translateX(-36px) scaleX(1);
-  opacity: var(--fsn-opacity);
-  visibility: visible;
-  pointer-events: auto;
-  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
-              opacity 0.3s ease,
-              visibility 0s linear 0s;
+.fsn-price {
+  font-size: 10px;
+  color: var(--fsn-text);
+  opacity: 0.7;
+  line-height: 1.2;
+  font-family: inherit;
 }
 
-/* --- none --- */
-#fsn-sidebar.fsn-anim-none {
-  transition: none !important;
+.fsn-badge {
+  display: inline-block;
+  font-size: 8px;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #e53e3e;
+  color: #fff;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.5;
+  font-family: inherit;
 }
-#fsn-sidebar.fsn-left.fsn-anim-none       { transform: translateY(-50%) translateX(-110%); }
-#fsn-sidebar.fsn-left.fsn-anim-none.fsn-open  { transform: translateY(-50%) translateX(36px); visibility: visible; pointer-events: auto; }
-#fsn-sidebar.fsn-right.fsn-anim-none      { transform: translateY(-50%) translateX(110%); }
+
+/* Badge color variants */
+.fsn-badge-sale { background: #e53e3e; }
+.fsn-badge-new  { background: #2b6cb0; }
+
+/* price + badge always block in static mode */
+#fsn-sidebar.fsn-static .fsn-price,
+#fsn-sidebar.fsn-static .fsn-badge {
+  display: block;
+  text-align: center;
+}
+
+/* =============================================
+   Section divider (collections / products)
+   ============================================= */
+
+.fsn-divider {
+  width: 80%;
+  height: 1px;
+  background: rgba(0,0,0,0.1);
+  margin: 6px auto;
+  flex-shrink: 0;
+}
+
+/* =============================================
+   Animation overrides
+   ============================================= */
+
+/* fade */
+#fsn-sidebar.fsn-left.fsn-anim-fade  { transform: translateY(-50%) translateX(36px);  opacity: 0; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+#fsn-sidebar.fsn-left.fsn-anim-fade.fsn-open  { opacity: var(--fsn-opacity); visibility: visible; pointer-events: auto; transition: opacity 0.3s ease, visibility 0s linear 0s; }
+#fsn-sidebar.fsn-right.fsn-anim-fade { transform: translateY(-50%) translateX(-36px); opacity: 0; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
+#fsn-sidebar.fsn-right.fsn-anim-fade.fsn-open { opacity: var(--fsn-opacity); visibility: visible; pointer-events: auto; transition: opacity 0.3s ease, visibility 0s linear 0s; }
+
+/* scale */
+#fsn-sidebar.fsn-left.fsn-anim-scale  { transform: translateY(-50%) translateX(36px)  scaleX(0); transform-origin: left  center; opacity: 0; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease, visibility 0s linear 0.3s; }
+#fsn-sidebar.fsn-left.fsn-anim-scale.fsn-open  { transform: translateY(-50%) translateX(36px)  scaleX(1); opacity: var(--fsn-opacity); visibility: visible; pointer-events: auto; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease, visibility 0s linear 0s; }
+#fsn-sidebar.fsn-right.fsn-anim-scale { transform: translateY(-50%) translateX(-36px) scaleX(0); transform-origin: right center; opacity: 0; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease, visibility 0s linear 0.3s; }
+#fsn-sidebar.fsn-right.fsn-anim-scale.fsn-open { transform: translateY(-50%) translateX(-36px) scaleX(1); opacity: var(--fsn-opacity); visibility: visible; pointer-events: auto; transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease, visibility 0s linear 0s; }
+
+/* none */
+#fsn-sidebar.fsn-anim-none { transition: none !important; }
+#fsn-sidebar.fsn-left.fsn-anim-none        { transform: translateY(-50%) translateX(-110%); }
+#fsn-sidebar.fsn-left.fsn-anim-none.fsn-open  { transform: translateY(-50%) translateX(36px);  visibility: visible; pointer-events: auto; }
+#fsn-sidebar.fsn-right.fsn-anim-none       { transform: translateY(-50%) translateX(110%);  }
 #fsn-sidebar.fsn-right.fsn-anim-none.fsn-open { transform: translateY(-50%) translateX(-36px); visibility: visible; pointer-events: auto; }
 
 /* =============================================
@@ -297,18 +346,201 @@
 
 @media (max-width: 768px) {
   #fsn-sidebar { max-height: 70vh; }
+
+  /* Static sidebar collapses to hamburger on mobile */
+  #fsn-sidebar.fsn-static {
+    width:      auto;
+    max-height: 70vh;
+    top:        50%;
+    bottom:     auto;
+    transform:  translateY(-50%) translateX(-110%) !important;
+    visibility: hidden;
+    pointer-events: none;
+    align-items: center;
+    gap: var(--fsn-gap);
+    padding: 12px 8px;
+    transition:
+      transform  0.35s cubic-bezier(0.34,1.56,0.64,1),
+      visibility 0s linear 0.35s !important;
+  }
+  #fsn-sidebar.fsn-static.fsn-right {
+    transform: translateY(-50%) translateX(110%) !important;
+  }
+  #fsn-sidebar.fsn-static.fsn-open {
+    transform:     translateY(-50%) translateX(36px) !important;
+    visibility:    visible;
+    pointer-events: auto;
+    transition:
+      transform  0.35s cubic-bezier(0.34,1.56,0.64,1),
+      visibility 0s linear 0s !important;
+  }
+  #fsn-sidebar.fsn-static.fsn-right.fsn-open {
+    transform: translateY(-50%) translateX(-36px) !important;
+  }
+  #fsn-sidebar.fsn-static .fsn-item,
+  #fsn-sidebar.fsn-static .fsn-item-product {
+    flex-direction: column;
+    padding: 4px 0;
+    gap: 4px;
+    border-radius: 0;
+  }
+  #fsn-sidebar.fsn-static .fsn-icon { width: var(--fsn-icon-size); height: var(--fsn-icon-size); }
+  #fsn-sidebar.fsn-static .fsn-label { font-size: 10px; text-align: center; }
+  body.fsn-static-left,
+  body.fsn-static-right { padding-left: 0 !important; padding-right: 0 !important; }
+
+  /* Static mode toggle visible on mobile */
+  #fsn-toggle.fsn-static-toggle { display: flex; }
 }
 
-/* =============================================
-   Mobile-only mode
-   ============================================= */
-
+/* Mobile-only mode */
 #fsn-sidebar.fsn-mobile-only,
 #fsn-toggle.fsn-mobile-only {
   display: none;
 }
-
 @media (max-width: 768px) {
   #fsn-sidebar.fsn-mobile-only { display: flex; }
   #fsn-toggle.fsn-mobile-only  { display: flex; }
+}
+
+/* =============================================
+   Feature B: Nested collection accordion
+   ============================================= */
+
+.fsn-group {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Parent toggle — same layout as .fsn-item but acts as a button */
+.fsn-parent-toggle {
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  position: relative;
+}
+
+.fsn-parent-toggle:focus-visible {
+  outline: 2px solid var(--fsn-text);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.fsn-parent-toggle:hover .fsn-icon,
+.fsn-parent-toggle:focus-visible .fsn-icon {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+
+/* Chevron indicator */
+.fsn-chevron {
+  font-size: 8px;
+  opacity: 0.55;
+  line-height: 1;
+  transition: transform 0.25s ease;
+  display: block;
+  text-align: center;
+  font-family: inherit;
+}
+
+.fsn-parent-open .fsn-chevron {
+  transform: rotate(180deg);
+}
+
+/* Accordion children container */
+.fsn-children {
+  width: 100%;
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fsn-children.fsn-expanded {
+  max-height: 600px;
+}
+
+/* Child collection item — smaller than parent */
+.fsn-child-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 4px;
+  text-decoration: none;
+  color: var(--fsn-text);
+  width: 100%;
+  opacity: 0.78;
+  border-radius: 6px;
+  transition: opacity 0.15s ease, background 0.15s ease;
+}
+
+.fsn-child-item:hover,
+.fsn-child-item:focus-visible {
+  opacity: 1;
+  background: rgba(0,0,0,0.05);
+}
+
+.fsn-child-item.fsn-active-child {
+  opacity: 1;
+  background: rgba(0,0,0,0.08);
+}
+
+.fsn-child-icon {
+  width:  calc(var(--fsn-icon-size) * 0.7);
+  height: calc(var(--fsn-icon-size) * 0.7);
+  border-radius: calc(var(--fsn-radius) - 4px);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #f0f0f0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.fsn-child-item:hover .fsn-child-icon,
+.fsn-child-item:focus-visible .fsn-child-icon {
+  transform: scale(1.06);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.fsn-child-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border: none;
+}
+
+.fsn-child-label {
+  font-size: 9px;
+  line-height: 1.2;
+  text-align: center;
+  max-width: calc(var(--fsn-icon-size) * 0.7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--fsn-text);
+  font-family: inherit;
+}
+
+/* Active child indicator — left accent bar */
+.fsn-child-item.fsn-active-child .fsn-child-icon {
+  box-shadow: 0 0 0 2px var(--fsn-text);
+}
+
+/* Static mode: children stay compact */
+#fsn-sidebar.fsn-static .fsn-child-item {
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 2px;
+}
+
+#fsn-sidebar.fsn-static .fsn-child-icon {
+  width:  calc(var(--fsn-icon-size) * 0.65);
+  height: calc(var(--fsn-icon-size) * 0.65);
+}
+
+#fsn-sidebar.fsn-static .fsn-child-label {
+  font-size: 8px;
+  max-width: calc(var(--fsn-icon-size) * 0.65);
 }

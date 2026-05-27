@@ -2,7 +2,7 @@
 
 client_id = "f10c0b15120cc2ef6f8b3244caafa8c7"
 name = "Floating Side Navigation"
-application_url = "https://4273-2409-40f4-208e-58d6-c84c-678d-6379-20b5.ngrok-free.app"
+application_url = "https://0b15-103-186-151-132.ngrok-free.app"
 embedded = true
 
 [build]
@@ -19,7 +19,7 @@ use_legacy_install_flow = false
 
 [auth]
 redirect_urls = [
-  "https://4273-2409-40f4-208e-58d6-c84c-678d-6379-20b5.ngrok-free.app/auth/callback",
-  "https://4273-2409-40f4-208e-58d6-c84c-678d-6379-20b5.ngrok-free.app/auth/shopify/callback",
-  "https://4273-2409-40f4-208e-58d6-c84c-678d-6379-20b5.ngrok-free.app/exitiframe",
+  "https://0b15-103-186-151-132.ngrok-free.app/auth/callback",
+  "https://0b15-103-186-151-132.ngrok-free.app/auth/shopify/callback",
+  "https://0b15-103-186-151-132.ngrok-free.app/exitiframe",
 ]
