@@ -29,15 +29,18 @@ model Session {
 }
 
 model Shop {
-  id          String               @id @default(cuid())
-  shop        String               @unique
-  accessToken String
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-  settings    SidebarSettings?
-  collections SelectedCollection[]
-  products    SidebarProduct[]
-  mappings    CollectionMapping[]
+  id             String                     @id @default(cuid())
+  shop           String                     @unique
+  accessToken    String
+  createdAt      DateTime                   @default(now())
+  updatedAt      DateTime                   @updatedAt
+  settings       SidebarSettings?
+  collections    SelectedCollection[]
+  products       SidebarProduct[]
+  mappings       CollectionMapping[]
+  schedules      NavigationSchedule[]
+  deviceSettings DeviceNavigationSettings[]
+  navigationMode NavigationMode?
 }
 
 model SidebarSettings {
@@ -139,4 +142,64 @@ model CollectionMapping {
 
   @@unique([shopId, parentCollectionId, relatedCollectionId])
   @@index([shopId, parentCollectionId])
+}
+
+// Phase 3 — Feature 1: Schedule Navigation Visibility
+model NavigationSchedule {
+  id        String   @id @default(cuid())
+  shopId    String   @map("shop_id")
+  shop      Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  name      String
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  timezone  String   @default("UTC")
+  enabled   Boolean  @default(true)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt    @map("updated_at")
+
+  @@map("navigation_schedule")
+  @@index([shopId])
+}
+
+// Phase 3 — Feature 2: Device-Based Navigation
+model DeviceNavigationSettings {
+  id           String   @id @default(cuid())
+  shopId       String   @map("shop_id")
+  shop         Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  deviceType   String   @map("device_type")
+  settingsJson String   @db.LongText @map("settings_json")
+  enabled      Boolean  @default(true)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt     @map("updated_at")
+
+  @@map("device_navigation_settings")
+  @@unique([shopId, deviceType])
+}
+
+// Phase 3 — Feature 3: Manual + Automatic Mode
+model NavigationMode {
+  id           String   @id @default(cuid())
+  shopId       String   @unique @map("shop_id")
+  shop         Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  mode         String   @default("manual")
+  settingsJson String   @db.LongText @map("settings_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt     @map("updated_at")
+
+  @@map("navigation_mode")
+}
+
+// Phase 3 — Feature 4: Theme Conflict Protection settings
+model ThemeSettings {
+  id               String   @id @default(cuid())
+  shop             String   @unique
+  headerHeight     Int      @default(0)    @map("header_height")
+  sidebarZIndex    Int      @default(9999) @map("sidebar_z_index")
+  mobileBreakpoint Int      @default(768)  @map("mobile_breakpoint")
+  customCss        String?  @db.LongText   @map("custom_css")
+  enabled          Boolean  @default(true)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt      @map("updated_at")
+
+  @@map("theme_settings")
 }

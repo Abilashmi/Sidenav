@@ -19,6 +19,32 @@
 #fsn-root { display: contents; }
 
 /* =============================================
+   Phase 3 — Theme Conflict Protection
+   Isolation prevents z-index and layout bleed
+   from third-party Shopify themes.
+   ============================================= */
+
+#fsn-sidebar,
+#fsn-toggle {
+  /* New stacking context — prevents z-index conflicts with theme elements */
+  isolation: isolate;
+  /* Prevent layout/style pollution from affecting the surrounding theme */
+  contain: layout style;
+  /* GPU compositing hint for smooth transform animations */
+  will-change: transform;
+  /* Never inherit theme font-size or line-height overrides */
+  font-size: 12px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+/* Ensure all children respect our box model */
+#fsn-sidebar *,
+#fsn-toggle * {
+  box-sizing: border-box;
+}
+
+/* =============================================
    Toggle Button (hamburger mode only)
    ============================================= */
 

@@ -37,6 +37,9 @@ export const loader = async ({ request }) => {
           where: { enabled: true },
           orderBy: [{ parentCollectionId: "asc" }, { position: "asc" }],
         },
+        schedules: { where: { enabled: true }, orderBy: { createdAt: "asc" } },
+        deviceSettings: { where: { enabled: true } },
+        navigationMode: true,
       },
     });
 
@@ -130,8 +133,26 @@ export const loader = async ({ request }) => {
       });
     });
 
+    const schedules = (shopRecord.schedules || []).map((s) => ({
+      name: s.name,
+      startDate: s.startDate.toISOString(),
+      endDate: s.endDate.toISOString(),
+      timezone: s.timezone,
+      enabled: s.enabled,
+    }));
+
+    const deviceSettings = (shopRecord.deviceSettings || []).map((d) => ({
+      deviceType: d.deviceType,
+      settingsJson: d.settingsJson,
+      enabled: d.enabled,
+    }));
+
+    const navigationMode = shopRecord.navigationMode
+      ? { mode: shopRecord.navigationMode.mode, settingsJson: shopRecord.navigationMode.settingsJson }
+      : null;
+
     return json(
-      { settings, collections: nestedCollections, products, mappings },
+      { settings, collections: nestedCollections, products, mappings, schedules, deviceSettings, navigationMode },
       { headers },
     );
   } catch (error) {

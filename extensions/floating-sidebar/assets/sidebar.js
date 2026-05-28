@@ -266,17 +266,87 @@ function isPageAllowed(s){
   return(pt in m)?!!m[pt]:!!s.showOnOtherPages;
 }
 
-function renderSidebar(data){
+// Phase 3 — Feature 1: Schedule check
+// Returns true if sidebar should be shown based on schedules.
+// No schedules = always show. Schedules defined = show only during an active window.
+function isScheduleActive(data){
+  var ss=data.schedules;
+  if(!ss||!ss.length)return true;
+  var now=Date.now();
+  for(var i=0;i<ss.length;i++){
+    var s=ss[i];if(!s.enabled)continue;
+    if(now>=new Date(s.startDate).getTime()&&now<=new Date(s.endDate).getTime())return true;
+  }
+  return false;
+}
+
+// Phase 3 — Feature 2: Device detection + settings override
+function getDeviceType(){
+  var w=window.innerWidth||document.documentElement.clientWidth;
+  return w<=768?"mobile":w<=1024?"tablet":"desktop";
+}
+
+// Returns null if sidebar should be hidden on this device; otherwise returns data
+// with settings merged from the device-specific override.
+function applyDeviceOverrides(data){
+  var ds=data.deviceSettings;if(!ds||!ds.length)return data;
+  var dt=getDeviceType(),match=null;
+  for(var i=0;i<ds.length;i++){if(ds[i].deviceType===dt&&ds[i].enabled){match=ds[i];break;}}
+  if(!match)return data;
+  try{
+    var ov=JSON.parse(match.settingsJson);
+    if(ov.showOnDevice===false)return null;
+    var ms=Object.assign({},data.settings);
+    if(ov.sidebarMode&&ov.sidebarMode!=="inherit")ms.sidebarMode=ov.sidebarMode;
+    if(ov.position&&ov.position!=="inherit")ms.position=ov.position;
+    if(ov.overrideWidth&&ov.sidebarWidth)ms.sidebarWidth=ov.sidebarWidth;
+    return Object.assign({},data,{settings:ms});
+  }catch(e){return data;}
+}
+
+// Phase 3 — Feature 3: Automatic navigation mode
+// Returns an auto-generated collection list when mode is "automatic", or null
+// to fall through to manual/mapping logic.
+function getAutoCollections(data){
+  var nm=data.navigationMode;
+  if(!nm||nm.mode!=="automatic")return null;
+  var rules={};try{rules=JSON.parse(nm.settingsJson);}catch(e){}
+  var pt=getPageType(),h=getPageHandle(),cols=data.collections||[];
+  if(pt!=="collection"||!h)return rules.fallbackToDefault!==false?cols:[];
+  for(var i=0;i<cols.length;i++){
+    if(cols[i].handle===h&&(cols[i].children||[]).length){
+      if(rules.autoShowChildren!==false)return cols[i].children;
+    }
+  }
+  for(var j=0;j<cols.length;j++){
+    var ch=cols[j].children||[];
+    if(ch.some(function(c){return c.handle===h;})){
+      if(rules.autoShowSiblings!==false)return ch;
+    }
+  }
+  return rules.fallbackToDefault!==false?cols:[];
+}
+
+function renderSidebar(rawData){
+  // Phase 3 Feature 2: apply device-specific overrides first
+  var data=applyDeviceOverrides(rawData);
+  if(!data){console.warn("[FSN] Sidebar hidden on this device type.");return;}
   var s=data.settings;
   if(!s.enabled){console.warn("[FSN] Sidebar disabled in settings.");return;}
   if(!isPageAllowed(s)){console.warn("[FSN] Sidebar hidden on page:",getPageType());return;}
-  data=Object.assign({},data,{collections:getContextualCollections(data)});
+  // Phase 3 Feature 1: schedule gate
+  if(!isScheduleActive(data)){console.warn("[FSN] No active schedule window.");return;}
+  // Phase 3 Feature 3: auto mode overrides manual mappings
+  var autoCols=getAutoCollections(data);
+  if(autoCols!==null){data=Object.assign({},data,{collections:autoCols});}
+  else{data=Object.assign({},data,{collections:getContextualCollections(data)});}
   data=filterActiveItem(data);
   if(!(data.collections||[]).length&&!(data.products||[]).length)return;
   var old=document.getElementById(SID);if(old)old.remove();
   var oldT=document.getElementById(TID);if(oldT)oldT.remove();
   document.body.classList.remove("fsn-static-left","fsn-static-right");
   applyRootVars(s);
+  // Phase 3 Feature 4: dynamic header-height adjustment (theme conflict protection)
   var hh=detectHeaderHeight();
   if(hh>0)document.documentElement.style.setProperty("--fsn-top-margin",Math.max(s.topMargin||20,hh+8)+"px");
   (s.sidebarMode||"hamburger")==="static"?renderStatic(data):renderHamburger(data);
@@ -305,6 +375,19 @@ function rerender(){
 function reinit(){
   if(!document.getElementById(SID)){var d=_cache||window.FSN_DATA||null;if(d)renderSidebar(d);else init();}
 }
+
+// Phase 3 Feature 4: re-check header height on resize (handles sticky/dynamic headers)
+var _rszTimer;
+window.addEventListener("resize",function(){
+  clearTimeout(_rszTimer);
+  _rszTimer=setTimeout(function(){
+    var sb=document.getElementById(SID);if(!sb)return;
+    var d=_cache||window.FSN_DATA||null;if(!d)return;
+    var s=d.settings;if(!s)return;
+    var hh=detectHeaderHeight();
+    if(hh>0)document.documentElement.style.setProperty("--fsn-top-margin",Math.max(s.topMargin||20,hh+8)+"px");
+  },150);
+},{passive:true});
 
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",init);else init();
 

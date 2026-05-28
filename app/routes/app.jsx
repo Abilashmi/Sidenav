@@ -43,6 +43,9 @@ export default function App() {
         <Link to="/app/collections">Collections</Link>
         <Link to="/app/products">Products</Link>
         <Link to="/app/mappings">Category Nav</Link>
+        <Link to="/app/schedule">Schedule</Link>
+        <Link to="/app/device">Device Nav</Link>
+        <Link to="/app/auto-mode">Auto Mode</Link>
         <Link to="/app/settings">Settings</Link>
       </NavMenu>
       <Outlet />
