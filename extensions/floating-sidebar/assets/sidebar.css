@@ -6,6 +6,9 @@
 :root {
   --fsn-bg:           #ffffff;
   --fsn-text:         #1a1a1a;
+  --fsn-accent:       #1a1a1a;
+  --fsn-hover:        #f1f2f3;
+  --fsn-badge:        #e53e3e;
   --fsn-radius:       12px;
   --fsn-icon-size:    56px;
   --fsn-z:            9999;
@@ -68,7 +71,7 @@
 
 #fsn-toggle:hover { opacity: 0.8; }
 #fsn-toggle:focus-visible {
-  outline: 2px solid var(--fsn-text);
+  outline: 2px solid var(--fsn-accent);
   outline-offset: 2px;
 }
 
@@ -190,7 +193,7 @@
 }
 #fsn-sidebar.fsn-static .fsn-item:hover,
 #fsn-sidebar.fsn-static .fsn-item-product:hover {
-  background: rgba(0,0,0,0.06);
+  background: var(--fsn-hover);
 }
 #fsn-sidebar.fsn-static .fsn-icon {
   width:  var(--fsn-icon-size);
@@ -216,9 +219,12 @@
   width:          100%;
 }
 
-/* Body pushed by static sidebar — width matches compact icon dock */
-body.fsn-static-left  { padding-left:  calc(var(--fsn-icon-size) + 20px) !important; transition: padding-left  0.3s ease; }
-body.fsn-static-right { padding-right: calc(var(--fsn-icon-size) + 20px) !important; transition: padding-right 0.3s ease; }
+/* Static sidebar floats over the storefront without creating a blank backside gutter. */
+body.fsn-static-left,
+body.fsn-static-right {
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
 
 /* =============================================
    Shadow
@@ -241,6 +247,15 @@ body.fsn-static-right { padding-right: calc(var(--fsn-icon-size) + 20px) !import
   color: var(--fsn-text);
   width: 100%;
   cursor: pointer;
+  border-radius: 8px;
+  transition: background 0.15s ease;
+}
+.fsn-item:hover,
+.fsn-item:focus-visible,
+.fsn-item-product:hover,
+.fsn-item-product:focus-visible {
+  background: var(--fsn-hover);
+  outline: none;
 }
 .fsn-item:hover .fsn-icon,
 .fsn-item:focus-visible .fsn-icon,
@@ -312,7 +327,7 @@ body.fsn-static-right { padding-right: calc(var(--fsn-icon-size) + 20px) !import
   font-weight: 700;
   padding: 1px 5px;
   border-radius: 3px;
-  background: #e53e3e;
+  background: var(--fsn-badge);
   color: #fff;
   letter-spacing: 0.5px;
   text-transform: uppercase;
@@ -320,9 +335,9 @@ body.fsn-static-right { padding-right: calc(var(--fsn-icon-size) + 20px) !import
   font-family: inherit;
 }
 
-/* Badge color variants */
-.fsn-badge-sale { background: #e53e3e; }
-.fsn-badge-new  { background: #2b6cb0; }
+/* Badge color variants use the configured badge color. */
+.fsn-badge-sale,
+.fsn-badge-new { background: var(--fsn-badge); }
 
 /* price + badge always block in static mode */
 #fsn-sidebar.fsn-static .fsn-price,
@@ -449,7 +464,7 @@ body.fsn-static-right { padding-right: calc(var(--fsn-icon-size) + 20px) !import
 }
 
 .fsn-parent-toggle:focus-visible {
-  outline: 2px solid var(--fsn-text);
+  outline: 2px solid var(--fsn-accent);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -505,12 +520,12 @@ body.fsn-static-right { padding-right: calc(var(--fsn-icon-size) + 20px) !import
 .fsn-child-item:hover,
 .fsn-child-item:focus-visible {
   opacity: 1;
-  background: rgba(0,0,0,0.05);
+  background: var(--fsn-hover);
 }
 
 .fsn-child-item.fsn-active-child {
   opacity: 1;
-  background: rgba(0,0,0,0.08);
+  background: var(--fsn-hover);
 }
 
 .fsn-child-icon {
@@ -551,7 +566,7 @@ body.fsn-static-right { padding-right: calc(var(--fsn-icon-size) + 20px) !import
 
 /* Active child indicator — left accent bar */
 .fsn-child-item.fsn-active-child .fsn-child-icon {
-  box-shadow: 0 0 0 2px var(--fsn-text);
+  box-shadow: 0 0 0 2px var(--fsn-accent);
 }
 
 /* Static mode: children stay compact */

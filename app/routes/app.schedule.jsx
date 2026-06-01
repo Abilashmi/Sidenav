@@ -21,6 +21,7 @@ import {
   EmptyState,
   Banner,
   DatePicker,
+  Thumbnail,
 } from "@shopify/polaris";
 import { authenticate } from "../shopify.server";
 import prisma from "../db.server";
@@ -61,13 +62,32 @@ function isLive(schedule) {
   );
 }
 
+function parseIds(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value;
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export const loader = async ({ request }) => {
   const { session } = await authenticate.admin(request);
   const shop = await prisma.shop.findUnique({
     where: { shop: session.shop },
-    include: { schedules: { orderBy: { createdAt: "asc" } } },
+    include: {
+      schedules: { orderBy: { createdAt: "asc" } },
+      collections: { where: { enabled: true }, orderBy: { sortOrder: "asc" } },
+      products: { where: { enabled: true }, orderBy: { sortOrder: "asc" } },
+    },
   });
-  return json({ schedules: shop?.schedules ?? [] });
+  return json({
+    schedules: shop?.schedules ?? [],
+    collections: shop?.collections ?? [],
+    products: shop?.products ?? [],
+  });
 };
 
 export const action = async ({ request }) => {
@@ -85,6 +105,8 @@ export const action = async ({ request }) => {
         startDate: new Date(formData.get("startDate")),
         endDate: new Date(formData.get("endDate")),
         timezone: formData.get("timezone") || "UTC",
+        collectionIds: formData.get("collectionIds") || "[]",
+        productIds: formData.get("productIds") || "[]",
         enabled: formData.get("enabled") === "true",
       },
     });
@@ -96,6 +118,8 @@ export const action = async ({ request }) => {
         startDate: new Date(formData.get("startDate")),
         endDate: new Date(formData.get("endDate")),
         timezone: formData.get("timezone") || "UTC",
+        collectionIds: formData.get("collectionIds") || "[]",
+        productIds: formData.get("productIds") || "[]",
         enabled: formData.get("enabled") === "true",
       },
     });
@@ -121,7 +145,7 @@ const TODAY = new Date();
 const NEXT_MONTH = new Date(TODAY.getTime() + 30 * 24 * 60 * 60 * 1000);
 
 export default function SchedulePage() {
-  const { schedules } = useLoaderData();
+  const { schedules, collections, products } = useLoaderData();
   const submit = useSubmit();
   const navigation = useNavigation();
   const shopify = useAppBridge();
@@ -132,6 +156,8 @@ export default function SchedulePage() {
   const [name, setName] = useState("");
   const [timezone, setTimezone] = useState("UTC");
   const [schedEnabled, setSchedEnabled] = useState(true);
+  const [selectedCollectionIds, setSelectedCollectionIds] = useState(new Set());
+  const [selectedProductIds, setSelectedProductIds] = useState(new Set());
   const [selectedDates, setSelectedDates] = useState({ start: TODAY, end: NEXT_MONTH });
   const [{ month, year }, setMonthYear] = useState({
     month: TODAY.getMonth(),
@@ -143,6 +169,8 @@ export default function SchedulePage() {
     setName("");
     setTimezone("UTC");
     setSchedEnabled(true);
+    setSelectedCollectionIds(new Set());
+    setSelectedProductIds(new Set());
     setSelectedDates({ start: TODAY, end: NEXT_MONTH });
     setMonthYear({ month: TODAY.getMonth(), year: TODAY.getFullYear() });
     setShowModal(true);
@@ -153,6 +181,8 @@ export default function SchedulePage() {
     setName(sched.name);
     setTimezone(sched.timezone || "UTC");
     setSchedEnabled(sched.enabled);
+    setSelectedCollectionIds(new Set(parseIds(sched.collectionIds)));
+    setSelectedProductIds(new Set(parseIds(sched.productIds)));
     const start = new Date(sched.startDate);
     const end = new Date(sched.endDate);
     setSelectedDates({ start, end });
@@ -172,11 +202,29 @@ export default function SchedulePage() {
     fd.append("startDate", selectedDates.start.toISOString());
     fd.append("endDate", selectedDates.end.toISOString());
     fd.append("timezone", timezone);
+    fd.append("collectionIds", JSON.stringify(Array.from(selectedCollectionIds)));
+    fd.append("productIds", JSON.stringify(Array.from(selectedProductIds)));
     fd.append("enabled", String(schedEnabled));
     submit(fd, { method: "post" });
     setShowModal(false);
     shopify.toast.show(editId ? "Schedule updated!" : "Schedule created!");
-  }, [editId, name, selectedDates, timezone, schedEnabled, submit, shopify]);
+  }, [editId, name, selectedDates, timezone, selectedCollectionIds, selectedProductIds, schedEnabled, submit, shopify]);
+
+  const handleCollectionPick = useCallback((id) => {
+    setSelectedCollectionIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
+
+  const handleProductPick = useCallback((id) => {
+    setSelectedProductIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  }, []);
 
   const handleToggle = useCallback(
     (id) => {
@@ -258,6 +306,10 @@ export default function SchedulePage() {
                               {fmtDate(sched.startDate)} → {fmtDate(sched.endDate)} ·{" "}
                               {sched.timezone}
                             </Text>
+                            <Text variant="bodySm" tone="subdued">
+                              {parseIds(sched.collectionIds).length} collections ·{" "}
+                              {parseIds(sched.productIds).length} products
+                            </Text>
                           </BlockStack>
                           <InlineStack gap="200">
                             <Button size="slim" onClick={() => openEdit(sched)}>
@@ -298,7 +350,8 @@ export default function SchedulePage() {
                 </Text>
                 <Text variant="bodySm" as="p">
                   <strong>Schedules defined:</strong> Sidebar only appears when at least one enabled
-                  schedule is currently active (current time falls within its date range).
+                  schedule is currently active (current time falls within its date range). If that
+                  schedule has selected products or collections, only those items are shown.
                 </Text>
                 <Text variant="bodySm" as="p">
                   <strong>Multiple schedules:</strong> Sidebar shows if ANY one of them is active.
@@ -361,6 +414,89 @@ export default function SchedulePage() {
               onChange={setTimezone}
               helpText="Reference timezone for this schedule (informational)"
             />
+
+            <BlockStack gap="300">
+              <InlineStack align="space-between" blockAlign="center">
+                <Text variant="bodyMd" as="p" fontWeight="semibold">
+                  Scheduled Collections
+                </Text>
+                <Badge tone="info">{selectedCollectionIds.size} selected</Badge>
+              </InlineStack>
+              {collections.length === 0 ? (
+                <Text variant="bodySm" tone="subdued" as="p">
+                  Add collections first, then assign them to this schedule.
+                </Text>
+              ) : (
+                <BlockStack gap="200">
+                  {collections.map((col) => (
+                    <InlineStack key={col.id} align="space-between" blockAlign="center">
+                      <InlineStack gap="300" blockAlign="center">
+                        <Thumbnail
+                          source={
+                            col.customImage ||
+                            col.image ||
+                            "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-collection-1.png"
+                          }
+                          alt={col.title}
+                          size="small"
+                        />
+                        <Text variant="bodyMd" as="span">
+                          {col.customLabel || col.title}
+                        </Text>
+                      </InlineStack>
+                      <Checkbox
+                        label=""
+                        checked={selectedCollectionIds.has(col.collectionId)}
+                        onChange={() => handleCollectionPick(col.collectionId)}
+                      />
+                    </InlineStack>
+                  ))}
+                </BlockStack>
+              )}
+            </BlockStack>
+
+            <BlockStack gap="300">
+              <InlineStack align="space-between" blockAlign="center">
+                <Text variant="bodyMd" as="p" fontWeight="semibold">
+                  Scheduled Products
+                </Text>
+                <Badge tone="info">{selectedProductIds.size} selected</Badge>
+              </InlineStack>
+              {products.length === 0 ? (
+                <Text variant="bodySm" tone="subdued" as="p">
+                  Add products first, then assign them to this schedule.
+                </Text>
+              ) : (
+                <BlockStack gap="200">
+                  {products.map((prod) => (
+                    <InlineStack key={prod.id} align="space-between" blockAlign="center">
+                      <InlineStack gap="300" blockAlign="center">
+                        <Thumbnail
+                          source={
+                            prod.customImage ||
+                            prod.image ||
+                            "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-product-1.png"
+                          }
+                          alt={prod.title}
+                          size="small"
+                        />
+                        <Text variant="bodyMd" as="span">
+                          {prod.customLabel || prod.title}
+                        </Text>
+                      </InlineStack>
+                      <Checkbox
+                        label=""
+                        checked={selectedProductIds.has(prod.productId)}
+                        onChange={() => handleProductPick(prod.productId)}
+                      />
+                    </InlineStack>
+                  ))}
+                </BlockStack>
+              )}
+              <Text variant="bodySm" tone="subdued" as="p">
+                Leave both lists empty to show the full sidebar during this schedule.
+              </Text>
+            </BlockStack>
 
             <Checkbox
               label="Enable this schedule immediately"

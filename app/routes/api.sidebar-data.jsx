@@ -1,6 +1,16 @@
 import { json } from "@remix-run/node";
 import prisma from "../db.server";
 
+function parseIds(value) {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
 export const loader = async ({ request }) => {
   const url = new URL(request.url);
   const shop = url.searchParams.get("shop");
@@ -53,6 +63,9 @@ export const loader = async ({ request }) => {
       mobileOnly: false,
       backgroundColor: "#ffffff",
       textColor: "#1a1a1a",
+      accentColor: "#1a1a1a",
+      hoverColor: "#f1f2f3",
+      badgeColor: "#e53e3e",
       borderRadius: 12,
       shadow: true,
       iconSize: 56,
@@ -138,6 +151,8 @@ export const loader = async ({ request }) => {
       startDate: s.startDate.toISOString(),
       endDate: s.endDate.toISOString(),
       timezone: s.timezone,
+      collectionIds: parseIds(s.collectionIds),
+      productIds: parseIds(s.productIds),
       enabled: s.enabled,
     }));
 

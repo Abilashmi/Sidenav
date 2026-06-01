@@ -91,13 +91,15 @@ function mkSvg(cls,d){
   s.innerHTML=d;return s;
 }
 
-function buildToggle(isR,bg,text,z,shadow){
+function buildToggle(isR,bg,text,z,shadow,accent,hover,badge){
   var b=document.createElement("button");
   b.id=TID;b.type="button";b.className=isR?"fsn-right":"fsn-left";
   if(shadow)b.classList.add("fsn-shadow");
   b.setAttribute("aria-label","Toggle collection sidebar");
   b.setAttribute("aria-expanded","false");
   b.style.setProperty("--fsn-bg",bg);b.style.setProperty("--fsn-text",text);b.style.setProperty("--fsn-z",String(z));
+  b.style.setProperty("--fsn-accent",accent||text);b.style.setProperty("--fsn-hover",hover||"#f1f2f3");
+  b.style.setProperty("--fsn-badge",badge||"#e53e3e");
   b.appendChild(mkSvg("fsn-icon-bars",'<line x1="3" y1="7" x2="21" y2="7"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="17" x2="21" y2="17"/>'));
   b.appendChild(mkSvg("fsn-icon-x",'<line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/>'));
   return b;
@@ -191,6 +193,11 @@ function populateItems(sb,data){
   prods.forEach(function(p){sb.appendChild(buildProductItem(p,shop));});
 }
 
+function removeExistingSidebar(){
+  document.querySelectorAll("#"+SID+",#"+TID).forEach(function(el){el.remove();});
+  document.body.classList.remove("fsn-static-left","fsn-static-right");
+}
+
 function makeSetOpen(sb,tg){
   return function(open){
     if(open){sb.classList.add("fsn-open");tg.classList.add("fsn-open");tg.setAttribute("aria-expanded","true");lockBodyScroll();}
@@ -202,6 +209,7 @@ function makeSetOpen(sb,tg){
 function extractSettings(s){
   return{
     isR:s.position==="right",bg:s.backgroundColor||"#ffffff",text:s.textColor||"#1a1a1a",
+    accent:s.accentColor||s.textColor||"#1a1a1a",hover:s.hoverColor||"#f1f2f3",badge:s.badgeColor||"#e53e3e",
     radius:s.borderRadius!=null?s.borderRadius:12,iconSize:s.iconSize!=null?s.iconSize:56,
     z:s.zIndex!=null?s.zIndex:9999,opacity:s.opacity!=null?s.opacity:1,shadow:!!s.shadow
   };
@@ -209,6 +217,8 @@ function extractSettings(s){
 
 function applySidebarStyles(sb,e){
   sb.style.setProperty("--fsn-bg",e.bg);sb.style.setProperty("--fsn-text",e.text);
+  sb.style.setProperty("--fsn-accent",e.accent);sb.style.setProperty("--fsn-hover",e.hover);
+  sb.style.setProperty("--fsn-badge",e.badge);
   sb.style.setProperty("--fsn-radius",e.radius+"px");sb.style.setProperty("--fsn-icon-size",e.iconSize+"px");
   sb.style.setProperty("--fsn-z",String(e.z));sb.style.setProperty("--fsn-opacity",String(e.opacity));
 }
@@ -224,7 +234,7 @@ function renderHamburger(data){
   var anim=s.animationStyle||"slide";
   if(anim!=="slide")sb.classList.add("fsn-anim-"+anim);
   populateItems(sb,data);
-  var tg=buildToggle(e.isR,e.bg,e.text,e.z,e.shadow);
+  var tg=buildToggle(e.isR,e.bg,e.text,e.z,e.shadow,e.accent,e.hover,e.badge);
   if(s.mobileOnly)tg.classList.add("fsn-mobile-only");
   var setOpen=makeSetOpen(sb,tg);
   var isOpen;try{isOpen=localStorage.getItem(SK)==="true";}catch(_){isOpen=false;}
@@ -243,9 +253,8 @@ function renderStatic(data){
   populateItems(sb,data);
   document.body.appendChild(sb);
   var mob=window.matchMedia("(max-width:768px)").matches;
-  if(!mob)document.body.classList.add(e.isR?"fsn-static-right":"fsn-static-left");
   if(mob){
-    var tg=buildToggle(e.isR,e.bg,e.text,e.z,e.shadow);tg.classList.add("fsn-static-toggle");
+    var tg=buildToggle(e.isR,e.bg,e.text,e.z,e.shadow,e.accent,e.hover,e.badge);tg.classList.add("fsn-static-toggle");
     var setOpen=makeSetOpen(sb,tg);
     var wasOpen;try{wasOpen=localStorage.getItem(SK)==="true";}catch(_){wasOpen=false;}
     tg.addEventListener("click",function(){setOpen(!sb.classList.contains("fsn-open"));});
@@ -253,8 +262,7 @@ function renderStatic(data){
     document.body.appendChild(tg);setOpen(wasOpen);
   }
   window.matchMedia("(max-width:768px)").addEventListener("change",function(ev){
-    if(ev.matches)document.body.classList.remove("fsn-static-left","fsn-static-right");
-    else{document.body.classList.add(e.isR?"fsn-static-right":"fsn-static-left");unlockBodyScroll();}
+    if(!ev.matches)unlockBodyScroll();
   });
 }
 
@@ -267,17 +275,41 @@ function isPageAllowed(s){
 }
 
 // Phase 3 — Feature 1: Schedule check
-// Returns true if sidebar should be shown based on schedules.
 // No schedules = always show. Schedules defined = show only during an active window.
-function isScheduleActive(data){
+function getActiveSchedules(data){
   var ss=data.schedules;
-  if(!ss||!ss.length)return true;
+  if(!ss||!ss.length)return null;
   var now=Date.now();
+  var active=[];
   for(var i=0;i<ss.length;i++){
     var s=ss[i];if(!s.enabled)continue;
-    if(now>=new Date(s.startDate).getTime()&&now<=new Date(s.endDate).getTime())return true;
+    if(now>=new Date(s.startDate).getTime()&&now<=new Date(s.endDate).getTime())active.push(s);
   }
-  return false;
+  return active;
+}
+
+function filterCollectionsByIds(cols,ids){
+  var out=[];
+  (cols||[]).forEach(function(c){
+    var children=filterCollectionsByIds(c.children||[],ids);
+    if(ids[c.id])out.push(c);
+    else if(children.length)out.push(Object.assign({},c,{children:children}));
+  });
+  return out;
+}
+
+function applyScheduleItems(data,activeSchedules){
+  if(!activeSchedules||!activeSchedules.length)return data;
+  var cIds={},pIds={},hasSelection=false;
+  activeSchedules.forEach(function(s){
+    (s.collectionIds||[]).forEach(function(id){cIds[id]=true;hasSelection=true;});
+    (s.productIds||[]).forEach(function(id){pIds[id]=true;hasSelection=true;});
+  });
+  if(!hasSelection)return data;
+  return Object.assign({},data,{
+    collections:filterCollectionsByIds(data.collections||[],cIds),
+    products:(data.products||[]).filter(function(p){return !!pIds[p.id];})
+  });
 }
 
 // Phase 3 — Feature 2: Device detection + settings override
@@ -305,8 +337,8 @@ function applyDeviceOverrides(data){
 }
 
 // Phase 3 — Feature 3: Automatic navigation mode
-// Returns an auto-generated collection list when mode is "automatic", or null
-// to fall through to manual/mapping logic.
+// Collections are synced from Shopify via the Admin API (server-side) and
+// embedded in the page via the shop metafield. No API keys exposed to visitors.
 function getAutoCollections(data){
   var nm=data.navigationMode;
   if(!nm||nm.mode!=="automatic")return null;
@@ -335,16 +367,16 @@ function renderSidebar(rawData){
   if(!s.enabled){console.warn("[FSN] Sidebar disabled in settings.");return;}
   if(!isPageAllowed(s)){console.warn("[FSN] Sidebar hidden on page:",getPageType());return;}
   // Phase 3 Feature 1: schedule gate
-  if(!isScheduleActive(data)){console.warn("[FSN] No active schedule window.");return;}
-  // Phase 3 Feature 3: auto mode overrides manual mappings
+  var activeSchedules=getActiveSchedules(data);
+  if(activeSchedules&&activeSchedules.length===0){console.warn("[FSN] No active schedule window.");return;}
+  // Phase 3 Feature 3: auto mode uses synced collections embedded in page data (no API calls)
   var autoCols=getAutoCollections(data);
   if(autoCols!==null){data=Object.assign({},data,{collections:autoCols});}
   else{data=Object.assign({},data,{collections:getContextualCollections(data)});}
   data=filterActiveItem(data);
+  data=applyScheduleItems(data,activeSchedules);
   if(!(data.collections||[]).length&&!(data.products||[]).length)return;
-  var old=document.getElementById(SID);if(old)old.remove();
-  var oldT=document.getElementById(TID);if(oldT)oldT.remove();
-  document.body.classList.remove("fsn-static-left","fsn-static-right");
+  removeExistingSidebar();
   applyRootVars(s);
   // Phase 3 Feature 4: dynamic header-height adjustment (theme conflict protection)
   var hh=detectHeaderHeight();
@@ -365,9 +397,7 @@ async function init(){
 }
 
 function rerender(){
-  var old=document.getElementById(SID);if(old)old.remove();
-  var oldT=document.getElementById(TID);if(oldT)oldT.remove();
-  document.body.classList.remove("fsn-static-left","fsn-static-right");
+  removeExistingSidebar();
   unlockBodyScroll();
   var d=_cache||window.FSN_DATA||null;if(d)renderSidebar(d);else init();
 }

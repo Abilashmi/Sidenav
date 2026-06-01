@@ -34,7 +34,9 @@ $sr = $sStmt->fetch();
 $settings = $sr ? [
     'enabled' => (bool)$sr['enabled'], 'position' => $sr['position'],
     'mobileOnly' => (bool)$sr['mobileOnly'], 'backgroundColor' => $sr['backgroundColor'],
-    'textColor' => $sr['textColor'], 'borderRadius' => (int)$sr['borderRadius'],
+    'textColor' => $sr['textColor'], 'accentColor' => $sr['accentColor'] ?? '#1a1a1a',
+    'hoverColor' => $sr['hoverColor'] ?? '#f1f2f3', 'badgeColor' => $sr['badgeColor'] ?? '#e53e3e',
+    'borderRadius' => (int)$sr['borderRadius'],
     'shadow' => (bool)$sr['shadow'], 'iconSize' => (int)$sr['iconSize'],
     'animationStyle' => $sr['animationStyle'], 'opacity' => (float)$sr['opacity'],
     'zIndex' => (int)$sr['zIndex'], 'sidebarMode' => $sr['sidebarMode'],

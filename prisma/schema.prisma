@@ -52,6 +52,9 @@ model SidebarSettings {
   mobileOnly      Boolean  @default(false)
   backgroundColor String   @default("#ffffff")
   textColor       String   @default("#1a1a1a")
+  accentColor     String   @default("#1a1a1a")
+  hoverColor      String   @default("#f1f2f3")
+  badgeColor      String   @default("#e53e3e")
   borderRadius    Int      @default(12)
   shadow          Boolean  @default(true)
   iconSize        Int      @default(56)
@@ -153,6 +156,8 @@ model NavigationSchedule {
   startDate DateTime @map("start_date")
   endDate   DateTime @map("end_date")
   timezone  String   @default("UTC")
+  collectionIds String? @db.LongText @map("collection_ids")
+  productIds    String? @db.LongText @map("product_ids")
   enabled   Boolean  @default(true)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt    @map("updated_at")
@@ -178,13 +183,15 @@ model DeviceNavigationSettings {
 
 // Phase 3 — Feature 3: Manual + Automatic Mode
 model NavigationMode {
-  id           String   @id @default(cuid())
-  shopId       String   @unique @map("shop_id")
-  shop         Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
-  mode         String   @default("manual")
-  settingsJson String   @db.LongText @map("settings_json")
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt     @map("updated_at")
+  id              String   @id @default(cuid())
+  shopId          String   @unique @map("shop_id")
+  shop            Shop     @relation(fields: [shopId], references: [id], onDelete: Cascade)
+  mode            String   @default("manual")
+  settingsJson    String   @db.LongText @map("settings_json")
+  // Shopify Storefront API token for live collection fetching in automatic mode
+  storefrontToken String?  @map("storefront_token")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt     @map("updated_at")
 
   @@map("navigation_mode")
 }

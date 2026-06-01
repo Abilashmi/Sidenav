@@ -6,6 +6,9 @@ const DEFAULT_SETTINGS = {
   mobileOnly: false,
   backgroundColor: "#ffffff",
   textColor: "#1a1a1a",
+  accentColor: "#1a1a1a",
+  hoverColor: "#f1f2f3",
+  badgeColor: "#e53e3e",
   borderRadius: 12,
   shadow: true,
   iconSize: 56,
@@ -26,6 +29,16 @@ const DEFAULT_SETTINGS = {
   showOnSearch: false,
   showOnOtherPages: false,
 };
+
+function parseIds(value) {
+  if (!value) return [];
+  try {
+    const parsed = JSON.parse(value);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
 
 export async function buildSidebarPayload(shopDomain) {
   const shopRecord = await prisma.shop.findUnique({
@@ -120,6 +133,8 @@ export async function buildSidebarPayload(shopDomain) {
     startDate: s.startDate.toISOString(),
     endDate: s.endDate.toISOString(),
     timezone: s.timezone,
+    collectionIds: parseIds(s.collectionIds),
+    productIds: parseIds(s.productIds),
     enabled: s.enabled,
   }));
 
@@ -130,7 +145,10 @@ export async function buildSidebarPayload(shopDomain) {
   }));
 
   const navigationMode = shopRecord.navigationMode
-    ? { mode: shopRecord.navigationMode.mode, settingsJson: shopRecord.navigationMode.settingsJson }
+    ? {
+        mode: shopRecord.navigationMode.mode,
+        settingsJson: shopRecord.navigationMode.settingsJson,
+      }
     : null;
 
   return { settings, collections: nestedCollections, products, mappings, schedules, deviceSettings, navigationMode };

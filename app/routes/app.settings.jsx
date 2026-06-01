@@ -83,6 +83,9 @@ export const action = async ({ request }) => {
     mobileOnly: formData.get("mobileOnly") === "true",
     backgroundColor: formData.get("backgroundColor") || "#ffffff",
     textColor: formData.get("textColor") || "#1a1a1a",
+    accentColor: formData.get("accentColor") || "#1a1a1a",
+    hoverColor: formData.get("hoverColor") || "#f1f2f3",
+    badgeColor: formData.get("badgeColor") || "#e53e3e",
     borderRadius: parseInt(formData.get("borderRadius") || "12"),
     shadow: formData.get("shadow") === "true",
     iconSize: parseInt(formData.get("iconSize") || "56"),
@@ -130,6 +133,9 @@ export default function SettingsPage() {
   const [mobileOnly, setMobileOnly] = useState(settings?.mobileOnly ?? false);
   const [backgroundColor, setBackgroundColor] = useState(settings?.backgroundColor ?? "#ffffff");
   const [textColor, setTextColor] = useState(settings?.textColor ?? "#1a1a1a");
+  const [accentColor, setAccentColor] = useState(settings?.accentColor ?? "#1a1a1a");
+  const [hoverColor, setHoverColor] = useState(settings?.hoverColor ?? "#f1f2f3");
+  const [badgeColor, setBadgeColor] = useState(settings?.badgeColor ?? "#e53e3e");
   const [borderRadius, setBorderRadius] = useState(settings?.borderRadius ?? 12);
   const [shadow, setShadow] = useState(settings?.shadow ?? true);
   const [iconSize, setIconSize] = useState(settings?.iconSize ?? 56);
@@ -155,6 +161,9 @@ export default function SettingsPage() {
 
   const [bgColorHsb, setBgColorHsb] = useState(() => hexToHsb(backgroundColor));
   const [textColorHsb, setTextColorHsb] = useState(() => hexToHsb(textColor));
+  const [accentColorHsb, setAccentColorHsb] = useState(() => hexToHsb(accentColor));
+  const [hoverColorHsb, setHoverColorHsb] = useState(() => hexToHsb(hoverColor));
+  const [badgeColorHsb, setBadgeColorHsb] = useState(() => hexToHsb(badgeColor));
 
   const handleBgColorChange = useCallback((hsb) => {
     setBgColorHsb(hsb);
@@ -176,6 +185,36 @@ export default function SettingsPage() {
     if (/^#[0-9a-fA-F]{6}$/.test(val)) setTextColorHsb(hexToHsb(val));
   }, []);
 
+  const handleAccentColorChange = useCallback((hsb) => {
+    setAccentColorHsb(hsb);
+    setAccentColor(hsbToHex(hsb));
+  }, []);
+
+  const handleAccentColorText = useCallback((val) => {
+    setAccentColor(val);
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) setAccentColorHsb(hexToHsb(val));
+  }, []);
+
+  const handleHoverColorChange = useCallback((hsb) => {
+    setHoverColorHsb(hsb);
+    setHoverColor(hsbToHex(hsb));
+  }, []);
+
+  const handleHoverColorText = useCallback((val) => {
+    setHoverColor(val);
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) setHoverColorHsb(hexToHsb(val));
+  }, []);
+
+  const handleBadgeColorChange = useCallback((hsb) => {
+    setBadgeColorHsb(hsb);
+    setBadgeColor(hsbToHex(hsb));
+  }, []);
+
+  const handleBadgeColorText = useCallback((val) => {
+    setBadgeColor(val);
+    if (/^#[0-9a-fA-F]{6}$/.test(val)) setBadgeColorHsb(hexToHsb(val));
+  }, []);
+
   const handleSave = useCallback(() => {
     const fd = new FormData();
     fd.append("enabled", String(enabled));
@@ -183,6 +222,9 @@ export default function SettingsPage() {
     fd.append("mobileOnly", String(mobileOnly));
     fd.append("backgroundColor", backgroundColor);
     fd.append("textColor", textColor);
+    fd.append("accentColor", accentColor);
+    fd.append("hoverColor", hoverColor);
+    fd.append("badgeColor", badgeColor);
     fd.append("borderRadius", String(borderRadius));
     fd.append("shadow", String(shadow));
     fd.append("iconSize", String(iconSize));
@@ -205,7 +247,7 @@ export default function SettingsPage() {
     submit(fd, { method: "post" });
     shopify.toast.show("Settings saved!");
   }, [
-    enabled, position, mobileOnly, backgroundColor, textColor,
+    enabled, position, mobileOnly, backgroundColor, textColor, accentColor, hoverColor, badgeColor,
     borderRadius, shadow, iconSize, animationStyle, opacity,
     sidebarMode, sidebarWidth, topMargin, bottomMargin,
     pageVisibilityMode, showOnHome, showOnCollection, showOnProduct,
@@ -214,7 +256,7 @@ export default function SettingsPage() {
   ]);
 
   const previewSettings = {
-    enabled, position, mobileOnly, backgroundColor, textColor,
+    enabled, position, mobileOnly, backgroundColor, textColor, accentColor, hoverColor, badgeColor,
     borderRadius, shadow, iconSize, animationStyle, opacity,
     sidebarMode, sidebarWidth: parseInt(sidebarWidth), topMargin, bottomMargin,
   };
@@ -385,6 +427,81 @@ export default function SettingsPage() {
                     />
                   </InlineStack>
                   <ColorPicker onChange={handleTextColorChange} color={textColorHsb} />
+                </BlockStack>
+
+                <Divider />
+
+                <BlockStack gap="200">
+                  <Text variant="bodyMd" as="p" fontWeight="semibold">Accent Color</Text>
+                  <Text variant="bodySm" as="p" tone="subdued">Used for focus rings and selected item outlines</Text>
+                  <InlineStack gap="300" blockAlign="center">
+                    <Box
+                      width="32px"
+                      minHeight="32px"
+                      borderRadius="200"
+                      background="bg-surface"
+                      style={{ backgroundColor: accentColor, border: "1px solid #ddd" }}
+                    />
+                    <TextField
+                      label=""
+                      value={accentColor}
+                      onChange={handleAccentColorText}
+                      autoComplete="off"
+                      maxLength={7}
+                      placeholder="#1a1a1a"
+                    />
+                  </InlineStack>
+                  <ColorPicker onChange={handleAccentColorChange} color={accentColorHsb} />
+                </BlockStack>
+
+                <Divider />
+
+                <BlockStack gap="200">
+                  <Text variant="bodyMd" as="p" fontWeight="semibold">Hover Color</Text>
+                  <Text variant="bodySm" as="p" tone="subdued">Used behind items when shoppers hover or select them</Text>
+                  <InlineStack gap="300" blockAlign="center">
+                    <Box
+                      width="32px"
+                      minHeight="32px"
+                      borderRadius="200"
+                      background="bg-surface"
+                      style={{ backgroundColor: hoverColor, border: "1px solid #ddd" }}
+                    />
+                    <TextField
+                      label=""
+                      value={hoverColor}
+                      onChange={handleHoverColorText}
+                      autoComplete="off"
+                      maxLength={7}
+                      placeholder="#f1f2f3"
+                    />
+                  </InlineStack>
+                  <ColorPicker onChange={handleHoverColorChange} color={hoverColorHsb} />
+                </BlockStack>
+
+                <Divider />
+
+                <BlockStack gap="200">
+                  <Text variant="bodyMd" as="p" fontWeight="semibold">Badge Color</Text>
+                  <Text variant="bodySm" as="p" tone="subdued">Used for product badges like Sale or New</Text>
+                  <InlineStack gap="300" blockAlign="center">
+                    <Box
+                      width="32px"
+                      minHeight="32px"
+                      borderRadius="200"
+                      background="bg-surface"
+                      style={{ backgroundColor: badgeColor, border: "1px solid #ddd" }}
+                    />
+                    <TextField
+                      label=""
+                      value={badgeColor}
+                      onChange={handleBadgeColorText}
+                      autoComplete="off"
+                      maxLength={7}
+                      placeholder="#e53e3e"
+                    />
+                  </InlineStack>
+                  <ColorPicker onChange={handleBadgeColorChange} color={badgeColorHsb} />
                 </BlockStack>
 
                 <Divider />

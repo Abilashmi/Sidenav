@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Box, Text, BlockStack, Badge } from "@shopify/polaris";
+import { Box, Text, BlockStack, InlineStack, Badge } from "@shopify/polaris";
 
 const PLACEHOLDER_IMAGE =
   "https://cdn.shopify.com/s/files/1/0533/2089/files/placeholder-images-collection-1.png";
@@ -14,12 +14,17 @@ const DEFAULT_COLLECTIONS = [
 
 export default function SidebarPreview({ settings, collections = [], products = [] }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedItemId, setSelectedItemId] = useState(null);
+  const [hoveredItemId, setHoveredItemId] = useState(null);
 
   const {
     enabled         = true,
     position        = "left",
     backgroundColor = "#ffffff",
     textColor       = "#1a1a1a",
+    accentColor     = "#1a1a1a",
+    hoverColor      = "#f1f2f3",
+    badgeColor      = "#e53e3e",
     borderRadius    = 12,
     shadow          = true,
     iconSize        = 56,
@@ -42,6 +47,18 @@ export default function SidebarPreview({ settings, collections = [], products = 
     const prods = products.slice(0, 4).map((p) => ({ ...p, type: "product" }));
     return [...cols, ...prods];
   }, [collections, products]);
+
+  const selectedItem =
+    displayItems.find((item, index) => getItemKey(item, index) === selectedItemId) ||
+    displayItems[0];
+  const selectedItemKey = selectedItem
+    ? getItemKey(selectedItem, displayItems.indexOf(selectedItem))
+    : null;
+
+  const handleSelectItem = (item, index) => {
+    setSelectedItemId(getItemKey(item, index));
+    if (!isStatic) setIsOpen(true);
+  };
 
   const boxShadow = shadow
     ? isRight
@@ -75,6 +92,7 @@ export default function SidebarPreview({ settings, collections = [], products = 
       borderRadius: "8px",
       minHeight: "300px",
       overflow: "hidden",
+      position: "relative",
     };
     const sidebarStyle = {
       width: `${dockWidth}px`,
@@ -98,10 +116,11 @@ export default function SidebarPreview({ settings, collections = [], products = 
       flex: 1,
       background: "#e0e0e0",
       display: "flex",
-      alignItems: "center",
+      alignItems: "stretch",
       justifyContent: "center",
       margin: "8px",
       borderRadius: "6px",
+      minWidth: 0,
     };
     return (
       <BlockStack gap="200">
@@ -111,18 +130,26 @@ export default function SidebarPreview({ settings, collections = [], products = 
               <StaticItem
                 key={item.id || i}
                 item={item}
+                isSelected={getItemKey(item, i) === selectedItemKey}
+                isHovered={hoveredItemId === getItemKey(item, i)}
                 iconSize={previewIconSize}
                 textColor={textColor}
+                accentColor={accentColor}
+                hoverColor={hoverColor}
+                badgeColor={badgeColor}
                 borderRadius={borderRadius}
+                onClick={() => handleSelectItem(item, i)}
+                onMouseEnter={() => setHoveredItemId(getItemKey(item, i))}
+                onMouseLeave={() => setHoveredItemId(null)}
               />
             ))}
           </div>
           <div style={contentStyle}>
-            <Text variant="bodySm" tone="subdued" as="p">Storefront</Text>
+            <PreviewContent item={selectedItem} badgeColor={badgeColor} />
           </div>
         </div>
         <Text variant="bodySm" tone="subdued" as="p" alignment="center">
-          Static mode — sidebar always visible
+          Static mode - click an item to preview the storefront destination
         </Text>
       </BlockStack>
     );
@@ -238,52 +265,96 @@ export default function SidebarPreview({ settings, collections = [], products = 
         <div style={clipStyle}>
           <div style={innerStyle}>
             {displayItems.map((item, i) => (
-              <div
+              <PreviewItem
                 key={item.id || i}
-                style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, width: "100%" }}
-              >
-                <div style={iconStyle}>
-                  <img
-                    src={item.image || PLACEHOLDER_IMAGE}
-                    alt={item.label || item.title}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
-                    loading="lazy"
-                  />
-                </div>
-                <span style={labelStyle}>{item.label || item.title}</span>
-                {item.type === "product" && item.badge && (
-                  <span style={{
-                    fontSize: "8px", fontWeight: 700, padding: "1px 4px",
-                    background: "#e53e3e", color: "#fff", borderRadius: "3px",
-                    letterSpacing: "0.5px", textTransform: "uppercase",
-                  }}>
-                    {item.badge}
-                  </span>
-                )}
-              </div>
+                item={item}
+                isSelected={getItemKey(item, i) === selectedItemKey}
+                isHovered={hoveredItemId === getItemKey(item, i)}
+                iconStyle={iconStyle}
+                labelStyle={labelStyle}
+                accentColor={accentColor}
+                hoverColor={hoverColor}
+                badgeColor={badgeColor}
+                onClick={() => handleSelectItem(item, i)}
+                onMouseEnter={() => setHoveredItemId(getItemKey(item, i))}
+                onMouseLeave={() => setHoveredItemId(null)}
+              />
             ))}
           </div>
         </div>
 
         <div style={{
           flex: 1, background: "#e0e0e0", borderRadius: "6px",
-          display: "flex", alignItems: "center", justifyContent: "center", margin: "8px",
+          display: "flex", alignItems: "stretch", justifyContent: "center", margin: "8px",
+          minWidth: 0,
         }}>
-          <Text variant="bodySm" tone="subdued" as="p">Storefront Preview</Text>
+          <PreviewContent item={selectedItem} badgeColor={badgeColor} />
         </div>
       </div>
 
       <Text variant="bodySm" tone="subdued" as="p" alignment="center">
-        Click the {isRight ? "right" : "left"} tab to {isOpen ? "close" : "open"} the sidebar
+        Click the {isRight ? "right" : "left"} tab to {isOpen ? "close" : "open"} the sidebar, then choose an item
       </Text>
     </BlockStack>
   );
 }
 
-function StaticItem({ item, iconSize, textColor, borderRadius }) {
+function getItemKey(item, index) {
+  return String(item?.id ?? item?.collectionId ?? item?.productId ?? item?.handle ?? index);
+}
+
+function PreviewItem({ item, isSelected, isHovered, iconStyle, labelStyle, accentColor, hoverColor, badgeColor, onClick, onMouseEnter, onMouseLeave }) {
   const displayName = item.label || item.title;
+  const isActive = isSelected || isHovered;
   return (
-    <div style={{
+    <button
+      type="button"
+      onClick={onClick}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      aria-pressed={isSelected}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: 4,
+        width: "100%",
+        padding: "4px",
+        border: isSelected ? `1px solid ${accentColor}` : "1px solid transparent",
+        borderRadius: "8px",
+        background: isActive ? hoverColor : "transparent",
+        cursor: "pointer",
+        color: "inherit",
+        transition: "background 0.15s ease, border-color 0.15s ease",
+      }}
+    >
+      <div style={iconStyle}>
+        <img
+          src={item.image || PLACEHOLDER_IMAGE}
+          alt={displayName}
+          style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+          loading="lazy"
+        />
+      </div>
+      <span style={labelStyle}>{displayName}</span>
+      {item.type === "product" && item.badge && (
+        <span style={{
+          fontSize: "8px", fontWeight: 700, padding: "1px 4px",
+          background: badgeColor, color: "#fff", borderRadius: "3px",
+          letterSpacing: "0.5px", textTransform: "uppercase",
+        }}>
+          {item.badge}
+        </span>
+      )}
+    </button>
+  );
+}
+
+function StaticItem({ item, isSelected, isHovered, iconSize, textColor, accentColor, hoverColor, badgeColor, borderRadius, onClick, onMouseEnter, onMouseLeave }) {
+  const displayName = item.label || item.title;
+  const isActive = isSelected || isHovered;
+  return (
+    <button type="button" onClick={onClick} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave} aria-pressed={isSelected} style={{
       display: "flex",
       flexDirection: "column",
       alignItems: "center",
@@ -292,6 +363,10 @@ function StaticItem({ item, iconSize, textColor, borderRadius }) {
       borderRadius: "6px",
       cursor: "pointer",
       width: "100%",
+      border: isSelected ? `1px solid ${accentColor}` : "1px solid transparent",
+      background: isActive ? hoverColor : "transparent",
+      color: textColor,
+      transition: "background 0.15s ease, border-color 0.15s ease",
     }}>
       <div style={{
         width: iconSize, height: iconSize, flexShrink: 0,
@@ -320,13 +395,73 @@ function StaticItem({ item, iconSize, textColor, borderRadius }) {
       {item.type === "product" && item.badge && (
         <span style={{
           fontSize: "7px", fontWeight: 700, padding: "1px 3px",
-          background: "#e53e3e", color: "#fff", borderRadius: "3px",
+          background: badgeColor, color: "#fff", borderRadius: "3px",
           letterSpacing: "0.5px", textTransform: "uppercase",
           display: "inline-block",
         }}>
           {item.badge}
         </span>
       )}
+    </button>
+  );
+}
+
+function PreviewContent({ item, badgeColor }) {
+  const displayName = item?.label || item?.title || "Storefront";
+  const itemType = item?.type === "product" ? "Product" : "Collection";
+
+  return (
+    <div style={{
+      width: "100%",
+      minHeight: "100%",
+      padding: "16px",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+    }}>
+      <BlockStack gap="300" inlineAlign="center">
+        <div style={{
+          width: 72,
+          height: 72,
+          borderRadius: 8,
+          overflow: "hidden",
+          background: "#f7f7f7",
+          boxShadow: "0 1px 4px rgba(0,0,0,0.12)",
+        }}>
+          <img
+            src={item?.image || PLACEHOLDER_IMAGE}
+            alt={displayName}
+            style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+            loading="lazy"
+          />
+        </div>
+        <BlockStack gap="100" inlineAlign="center">
+          <InlineStack gap="200" blockAlign="center" align="center">
+            <Badge tone={item?.type === "product" ? "info" : "success"}>{itemType}</Badge>
+            {item?.badge && (
+              <span style={{
+                fontSize: "11px",
+                fontWeight: 700,
+                padding: "2px 6px",
+                background: badgeColor,
+                color: "#fff",
+                borderRadius: "4px",
+                lineHeight: 1.4,
+              }}>
+                {item.badge}
+              </span>
+            )}
+          </InlineStack>
+          <Text variant="bodyMd" as="p" fontWeight="semibold" alignment="center">
+            {displayName}
+          </Text>
+          {item?.price && (
+            <Text variant="bodySm" as="p" tone="subdued" alignment="center">
+              ${item.price}
+            </Text>
+          )}
+        </BlockStack>
+      </BlockStack>
     </div>
   );
 }
